@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Sanitizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .output-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .drop-zone {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drop-zone:hover {
+            background-color: #f8f9fa;
+            border-color: #2980b9;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #e3f2fd;
+            border-color: #1976d2;
+        }
+
+        .drop-zone-text {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-input-button:hover {
+            background-color: #2980b9;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background-color: #fafafa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            background-color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #219a52;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #7f8c8d;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .features {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .features h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .features ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .features li:last-child {
+            border-bottom: none;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .github-link {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .github-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .github-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CSV Sanitizer</h1>
+            <p class="subtitle">Wrap CSV fields in double quotes while preserving existing quotes</p>
+        </header>
+
+        <div id="message" class="message"></div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">Input</h2>
+                
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-zone-text">Drag and drop a CSV file here</div>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="file-input" class="file-input" accept=".csv">
+                        <button class="file-input-button">Choose File</button>
+                    </div>
+                </div>
+
+                <textarea 
+                    id="text-input" 
+                    placeholder="Or paste your CSV text here..."
+                ></textarea>
+            </div>
+
+            <div class="output-section">
+                <h2 class="section-title">Output</h2>
+                <textarea 
+                    id="output-area" 
+                    placeholder="Sanitized CSV will appear here..."
+                    readonly
+                ></textarea>
+                
+                <div class="button-group">
+                    <button id="copy-button" class="btn btn-primary" disabled>Copy to Clipboard</button>
+                    <button id="download-button" class="btn btn-secondary" disabled>Download CSV</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>Features</h3>
+            <ul>
+                <li>Wraps all unquoted CSV fields in double quotes</li>
+                <li>Preserves already quoted fields (no double quoting)</li>
+                <li>Handles empty fields by wrapping them in quotes</li>
+                <li>Drag and drop file support</li>
+                <li>Copy to clipboard functionality</li>
+                <li>Download sanitized CSV</li>
+                <li>No data leaves your browser - 100% client-side processing</li>
+            </ul>
+        </div>
+
+        <div class="github-link">
+            <p>
+                <a href="https://github.com/your-username/csv-sanitizer" target="_blank">
+                    View on GitHub
+                </a>
+                | Built with ❤️ using vanilla JavaScript
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // CSV Processing Logic (ported from TypeScript)
+        function isFieldQuoted(field) {
+            return field.startsWith('"') && field.endsWith('"') && field.length >= 2;
+        }
+
+        function sanitizeField(field) {
+            if (isFieldQuoted(field)) {
+                return field; // Already quoted, skip
+            }
+            return `"${field}"`; // Quote unquoted field
+        }
+
+        function sanitizeCSVLine(line) {
+            // Simple CSV parsing - split by comma but handle quoted fields
+            const fields = [];
+            let currentField = "";
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                    currentField += char;
+                } else if (char === ',' && !inQuotes) {
+                    fields.push(currentField.trim());
+                    currentField = "";
+                } else {
+                    currentField += char;
+                }
+            }
+
+            // Add the last field
+            if (currentField || fields.length > 0) {
+                fields.push(currentField.trim());
+            }
+
+            // Sanitize each field
+            const sanitizedFields = fields.map(sanitizeField);
+            return sanitizedFields.join(",");
+        }
+
+        function sanitizeCSVContent(content) {
+            const lines = content.split('\n');
+            const sanitizedLines = lines.map(line => {
+                if (line.trim() === "") return line; // Preserve empty lines
+                return sanitizeCSVLine(line);
+            });
+
+            return sanitizedLines.join('\n');
+        }
+
+        // UI Logic
+        class CSVSanitizerUI {
+            constructor() {
+                this.fileInput = document.getElementById("file-input");
+                this.textInput = document.getElementById("text-input");
+                this.outputArea = document.getElementById("output-area");
+                this.copyButton = document.getElementById("copy-button");
+                this.downloadButton = document.getElementById("download-button");
+                this.dropZone = document.getElementById("drop-zone");
+
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // File input change
+                this.fileInput.addEventListener("change", this.handleFileInput.bind(this));
+
+                // Text input change
+                this.textInput.addEventListener("input", this.handleTextInput.bind(this));
+
+                // Copy button
+                this.copyButton.addEventListener("click", this.copyToClipboard.bind(this));
+
+                // Download button
+                this.downloadButton.addEventListener("click", this.downloadFile.bind(this));
+
+                // Drag and drop
+                this.dropZone.addEventListener("dragover", this.handleDragOver.bind(this));
+                this.dropZone.addEventListener("drop", this.handleDrop.bind(this));
+                this.dropZone.addEventListener("dragenter", this.handleDragEnter.bind(this));
+                this.dropZone.addEventListener("dragleave", this.handleDragLeave.bind(this));
+            }
+
+            handleFileInput(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.processFile(file);
+                }
+            }
+
+            handleTextInput() {
+                const inputText = this.textInput.value;
+                this.processText(inputText);
+            }
+
+            async processFile(file) {
+                try {
+                    const text = await file.text();
+                    this.textInput.value = text;
+                    this.processText(text);
+                } catch (error) {
+                    console.error("Error reading file:", error);
+                    this.showError("Error reading file. Please try again.");
+                }
+            }
+
+            processText(text) {
+                if (!text.trim()) {
+                    this.outputArea.value = "";
+                    this.updateButtonStates(false);
+                    return;
+                }
+
+                try {
+                    const sanitizedContent = sanitizeCSVContent(text);
+                    this.outputArea.value = sanitizedContent;
+                    this.updateButtonStates(true);
+                } catch (error) {
+                    console.error("Error processing CSV:", error);
+                    this.showError("Error processing CSV. Please check the format.");
+                }
+            }
+
+            updateButtonStates(hasOutput) {
+                this.copyButton.disabled = !hasOutput;
+                this.downloadButton.disabled = !hasOutput;
+            }
+
+            async copyToClipboard() {
+                try {
+                    await navigator.clipboard.writeText(this.outputArea.value);
+                    this.showSuccess("Copied to clipboard!");
+                } catch (error) {
+                    console.error("Error copying to clipboard:", error);
+                    this.showError("Failed to copy to clipboard.");
+                }
+            }
+
+            downloadFile() {
+                const content = this.outputArea.value;
+                const blob = new Blob([content], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "sanitized.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            handleDragOver(event) {
+                event.preventDefault();
+                this.dropZone.classList.add("drag-over");
+            }
+
+            handleDragEnter(event) {
+                event.preventDefault();
+                this.dropZone.classList.add("drag-over");
+            }
+
+            handleDragLeave(event) {
+                event.preventDefault();
+                if (!this.dropZone.contains(event.relatedTarget)) {
+                    this.dropZone.classList.remove("drag-over");
+                }
+            }
+
+            handleDrop(event) {
+                event.preventDefault();
+                this.dropZone.classList.remove("drag-over");
+                
+                const files = event.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    if (file.type === "text/csv" || file.name.endsWith(".csv")) {
+                        this.processFile(file);
+                    } else {
+                        this.showError("Please drop a CSV file.");
+                    }
+                }
+            }
+
+            showError(message) {
+                this.showMessage(message, "error");
+            }
+
+            showSuccess(message) {
+                this.showMessage(message, "success");
+            }
+
+            showMessage(message, type) {
+                const messageElement = document.getElementById("message");
+                if (messageElement) {
+                    messageElement.textContent = message;
+                    messageElement.className = `message ${type}`;
+                    messageElement.style.display = "block";
+                    
+                    setTimeout(() => {
+                        messageElement.style.display = "none";
+                    }, 3000);
+                }
+            }
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener("DOMContentLoaded", () => {
+            new CSVSanitizerUI();
+        });
+    </script>
+</body>
+</html>

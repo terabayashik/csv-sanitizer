@@ -1,5 +1,5 @@
+import { fileExists, generateOutputFileName } from "../fileUtils.ts";
 import { parseCliArgs } from "./cli.ts";
-import { fileExists, generateOutputFileName } from "./fileUtils.ts";
 import { sanitizeCSV } from "./sanitizer.ts";
 
 const main = async () => {

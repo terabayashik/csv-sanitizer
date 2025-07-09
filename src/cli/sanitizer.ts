@@ -1,5 +1,5 @@
-import { sanitizeCSVContent } from "./csvProcessor.ts";
-import { readFile, writeFile } from "./fileUtils.ts";
+import { sanitizeCSVContent } from "../csvProcessor.ts";
+import { readFile, writeFile } from "../fileUtils.ts";
 
 export const sanitizeCSV = async (inputFile: string, outputFile: string) => {
   try {
